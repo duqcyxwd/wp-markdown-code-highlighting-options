@@ -3,7 +3,7 @@
 Plugin Name: wp-markdown-code-highlighting-options
 Plugin URI: https://github.com/mczenko/wp-markdown-code-highlighting-options.git
 Description: This WordPress plugin works to enhance the handling of code blocks in markdown syntax and allows to turn on and off wrapping.
-Version: 0.1.0
+Version: 0.1.1
 Author: Marcin Czenko (Red Green Refactor)
 Author URI: http://redgreenrefactor.eu
 License: MIT License
@@ -20,19 +20,45 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 // Install filter to run after markdown (priority 6)
-add_filter('the_content',       'wmcho_process_markdown', 7);
-add_filter('the_content_rss',   'wmcho_process_markdown', 7);
-add_filter('get_the_excerpt',   'wmcho_process_markdown', 7);
+add_filter('the_content',       array(WP_MarkdownCodeHighlightingOptionProcessor::instance(),'processMarkdown'), 7);
+add_filter('the_content_rss',   array(WP_MarkdownCodeHighlightingOptionProcessor::instance(),'processMarkdown'), 7);
+add_filter('get_the_excerpt',   array(WP_MarkdownCodeHighlightingOptionProcessor::instance(),'processMarkdown'), 7);
 
-function wmcho_process_markdown( $text ) {
-    return preg_replace( '|<pre><code>(?:#!(nowrap)\n)?#!([^\n]+)\n|se', 'wmcho_process_language(\'$2\',\'$1\');', $text);
-}
+class WP_MarkdownCodeHighlightingOptionProcessor
+{
+    private $styleString = '';
+    private $classString = '';
 
-function wmcho_process_language( $language, $wrap) {
-    if(strcmp($wrap,'nowrap') == 0) {
-        $style = 'style="white-space:pre;word-wrap:normal;text-indent:0;padding:15px;overflow:auto;"';
-    } else {
-        $style = '';
+    private function processOption($option) {
+        if(strcmp($option,'nowrap') == 0) {
+            $this->styleString = 'style="white-space:pre;word-wrap:normal;text-indent:0;padding:15px;overflow:auto;"';
+        } else {
+            $this->classString = 'class="'.$option.'"';
+        }
     }
-    return '<pre><code class="'. $language . '" ' . $style . '>';
+
+    private function generateReplacement() {
+        return '<pre><code ' . $this->classString . ' ' . $this->styleString . '>';
+    }
+
+    private function resetOptions() {
+        $this->styleString = '';
+        $this->classString = '';
+    }
+
+    private function replaceCallback($matches) {
+        $this->resetOptions();   
+        foreach (explode(',',$matches[1]) as $option) {
+            $this->processOption($option);
+        }
+        return $this->generateReplacement();
+    }    
+
+    public static function instance() {
+        return new WP_MarkdownCodeHighlightingOptionProcessor();
+    }
+
+    public function processMarkdown($markdown_text) {
+        return preg_replace_callback('|<pre><code>#!(.+?)\n|', array($this,'replaceCallback'), $markdown_text);
+    }
 }

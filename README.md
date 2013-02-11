@@ -2,9 +2,9 @@
 **Contributors**: marcin.czenko  
 **Link**: https://github.com/mczenko/wp-markdown-code-highlighting-options.git  
 **Tags**: markdown, highlight.js, syntax, code, pre, highlight, wrap  
-**Requires at least**: 3.1  
+**Requires at least**: not tested  
 **Tested up to**: 3.5  
-**Stable tag**: 0.1.0  
+**Stable tag**: 0.1.1  
 **License**: MIT License  
 **License URI**: http://opensource.org/licenses/MIT
 
@@ -25,10 +25,9 @@ The concept is inspired by the [wp-markdown-syntax-highlight](https://github.com
 
 Currently it allows you to add the formatting language (besides the one automatically recognised by wp-highlight.js) and choose if the code should be wrapped or not.
 
-The usage is extremely simple. Just add a shebang as the first line of your code example with the some extra formatting options:
+The usage is extremely simple. Just add a shebang as the first line of your code example with some extra formatting options:
 
-    #!ruby
-    #!nowrap
+    #!ruby,nowrap
     class Foo < Bar
       def hello
         puts "Hello World!"
@@ -43,7 +42,9 @@ The shebang is removed, and the code is outputted as:
       end
     end</code></pre>
 
-Without the `#!nowrap` option the style will not be added and your default style will be used. To make your code wrapping at the end of the line you can add the following additional CSS in the wp-highlight.js settings:
+> Options are comma-separated and must all be in one line.
+
+Without the `nowrap` option the style will not be added and your default style will be used. To make your code wrapping at the end of the line you can add the following additional CSS in the wp-highlight.js settings:
 
     pre code {
         border: 1px solid #ccc;
@@ -69,3 +70,7 @@ Installation is standard and straight forward.
 
 #### 0.1.0
 * Initial release
+
+#### 0.1.0
+* Options are comma-separated and must be on the same line. Source code is better prepared to accommodate future options.
+  Regular expressions are not using the "e" modifier which is considered insecure.
